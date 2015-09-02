@@ -1,7 +1,5 @@
-yii2-redis module with various fixes
-====================================
-
-This version incompatible with official extension due pk storage algorithm.
+yii2-redis module with various fixes and speedups
+=================================================
 
 * [storing pk in hashes](https://github.com/E96/yii2-redis/commit/4d2eb58b14316c55ea978f26bf0b6d6122fbeec1)
 * [getting long string failure](https://github.com/E96/yii2-redis/commit/fdaf09f4d191c7bf29d5e75432385611b90759af)
@@ -16,8 +14,28 @@ This version incompatible with official extension due pk storage algorithm.
 * [fix integer values in buildKey](https://github.com/E96/yii2-redis/commit/da6ed85ed15bd33b4137083403c027a15b9fc03d)
 * [Make Connection::parseResponse public](https://github.com/E96/yii2-redis/commit/f5ce8325303cda6bd1bc1ecb62d310a5b01661e4)
 
-original README below:
+Migration guide
+===============
 
+This version incompatible with official extension due pk storage algorithm.
+To migrate to our version you should migrate your pks. Example code:
+
+```php
+function fill($keys)
+{
+    foreach ($keys as $key) {
+        yield $key;
+        yield 0;
+    }
+}
+
+$keys = $redis->executeCommand('LRANGE', ['model', 0, -1]);
+$keys = iterator_to_array(fill($keys));
+$keys = array_unshift($keys, 'model')
+
+$redis->executeCommand('DEL', 'model')
+$redis->executeCommand('HMSET', $keys)
+```
 
 Redis Cache, Session and ActiveRecord for Yii 2
 ===============================================
