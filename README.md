@@ -2,9 +2,8 @@ yii2-redis module with various fixes
 ====================================
 
 This version incompatible with official extension due pk storage algorithm.
-  
 
-
+* [storing pk in hashes](https://github.com/E96/yii2-redis/commit/4d2eb58b14316c55ea978f26bf0b6d6122fbeec1)
 * [getting long string failure](https://github.com/E96/yii2-redis/commit/fdaf09f4d191c7bf29d5e75432385611b90759af)
 * [min and max number comparison](https://github.com/E96/yii2-redis/commit/c1e0f6e1c03007a1133ce7916a4683a242e3515f)
 * [a bit more info in traces](https://github.com/E96/yii2-redis/commit/fe8df386a0dadbbc192f1be48c2e4dd899c12b98)
@@ -31,9 +30,9 @@ For license information check the [LICENSE](LICENSE.md)-file.
 
 Documentation is at [docs/guide/README.md](docs/guide/README.md).
 
-[![Latest Stable Version](https://poser.pugx.org/yiisoft/yii2-redis/v/stable.png)](https://packagist.org/packages/yiisoft/yii2-redis)
-[![Total Downloads](https://poser.pugx.org/yiisoft/yii2-redis/downloads.png)](https://packagist.org/packages/yiisoft/yii2-redis)
-[![Build Status](https://travis-ci.org/yiisoft/yii2-redis.svg?branch=master)](https://travis-ci.org/yiisoft/yii2-redis)
+[![Latest Stable Version](https://poser.pugx.org/e96/yii2-redis/v/stable.png)](https://packagist.org/packages/e96/yii2-redis)
+[![Total Downloads](https://poser.pugx.org/e96/yii2-redis/downloads.png)](https://packagist.org/packages/e96/yii2-redis)
+[![Build Status](https://travis-ci.org/E96/yii2-redis.svg?branch=master)](https://travis-ci.org/E96/yii2-redis)
 
 
 Requirements
