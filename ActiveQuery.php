@@ -200,7 +200,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
                 $db = $modelClass::getDb();
             }
 
-            return sizeof($db->executeCommand('HKEYS', [$modelClass::keyPrefix()]));
+            return $db->executeCommand('HLEN', [$modelClass::keyPrefix()]);
         } else {
             return $this->executeScript($db, 'Count');
         }
