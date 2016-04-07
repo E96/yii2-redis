@@ -173,6 +173,7 @@ class ActiveRecord extends BaseActiveRecord
             $pk = static::buildKey($pk);
             $key = static::keyPrefix() . ':a:' . $pk;
             // save attributes
+            $delArgs = [];
             foreach ($attributes as $attribute => $value) {
                 if (isset($newPk[$attribute])) {
                     $newPk[$attribute] = $value;
@@ -183,7 +184,7 @@ class ActiveRecord extends BaseActiveRecord
                     }
                     $setArgs[$attribute] = $value;
                 } else {
-                    $delArgs = $attribute;
+                    $delArgs[] = $attribute;
                 }
             }
             $newPk = static::buildKey($newPk);
@@ -195,7 +196,9 @@ class ActiveRecord extends BaseActiveRecord
                     $db->executeCommand('HMSET', [$key, $setArgs]);
                 }
                 if (!empty($delArgs)) {
-                    $db->executeCommand('HDEL', [$key, $delArgs]);
+                    foreach ($delArgs as $del) {
+                        $db->executeCommand('HDEL', [$key, $del]);
+                    }
                 }
                 $db->executeCommand('HSET', [static::keyPrefix(), $newPk, 0]);
                 $db->executeCommand('HDEL', [static::keyPrefix(), $pk]);
@@ -206,7 +209,9 @@ class ActiveRecord extends BaseActiveRecord
                     $db->executeCommand('HMSET', [$key, $setArgs]);
                 }
                 if (!empty($delArgs)) {
-                    $db->executeCommand('HDEL', [$key, $delArgs]);
+                    foreach ($delArgs as $del) {
+                        $db->executeCommand('HDEL', [$key, $del]);
+                    }
                 }
             }
             $n++;

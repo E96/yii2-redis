@@ -417,11 +417,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
             case 'Column':
                 $column = [];
                 foreach ($data as $dataRow) {
-                    $row = [];
-                    $c = count($dataRow);
-                    for ($i = 0; $i < $c;) {
-                        $row[$dataRow[$i++]] = $dataRow[$i++];
-                    }
+                    $row = $this->parseList($dataRow);
                     $column[] = $row[$columnName];
                 }
 
@@ -429,13 +425,8 @@ class ActiveQuery extends Component implements ActiveQueryInterface
             case 'Sum':
                 $sum = 0;
                 foreach ($data as $dataRow) {
-                    $c = count($dataRow);
-                    for ($i = 0; $i < $c;) {
-                        if ($dataRow[$i++] == $columnName) {
-                            $sum += $dataRow[$i];
-                            break;
-                        }
-                    }
+                    $row = $this->parseList($dataRow);
+                    $sum += $row[$columnName];
                 }
 
                 return $sum;
@@ -444,25 +435,17 @@ class ActiveQuery extends Component implements ActiveQueryInterface
                 $count = 0;
                 foreach ($data as $dataRow) {
                     $count++;
-                    $c = count($dataRow);
-                    for ($i = 0; $i < $c;) {
-                        if ($dataRow[$i++] == $columnName) {
-                            $sum += $dataRow[$i];
-                            break;
-                        }
-                    }
+                    $row = $this->parseList($dataRow);
+                    $sum += $row[$columnName];
                 }
 
                 return $sum / $count;
             case 'Min':
                 $min = null;
                 foreach ($data as $dataRow) {
-                    $c = count($dataRow);
-                    for ($i = 0; $i < $c;) {
-                        if ($dataRow[$i++] == $columnName && ($min == null || $dataRow[$i] < $min)) {
-                            $min = $dataRow[$i];
-                            break;
-                        }
+                    $row = $this->parseList($dataRow);
+                    if ($min == null || $row[$columnName] < $min) {
+                        $min = $row[$columnName];
                     }
                 }
 
@@ -470,12 +453,9 @@ class ActiveQuery extends Component implements ActiveQueryInterface
             case 'Max':
                 $max = null;
                 foreach ($data as $dataRow) {
-                    $c = count($dataRow);
-                    for ($i = 0; $i < $c;) {
-                        if ($dataRow[$i++] == $columnName && ($max == null || $dataRow[$i] > $max)) {
-                            $max = $dataRow[$i];
-                            break;
-                        }
+                    $row = $this->parseList($dataRow);
+                    if ($max == null || $row[$columnName] > $max) {
+                        $max = $row[$columnName];
                     }
                 }
 
