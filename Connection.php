@@ -77,6 +77,13 @@ class Connection extends Component
      */
     public $dataTimeout = null;
     /**
+     * @var integer Bitmask field which may be set to any combination of connection flags passed to [stream_socket_client()](http://php.net/manual/en/function.stream-socket-client.php).
+     * Currently the select of connection flags is limited to `STREAM_CLIENT_CONNECT` (default), `STREAM_CLIENT_ASYNC_CONNECT` and `STREAM_CLIENT_PERSISTENT`.
+     * @see http://php.net/manual/en/function.stream-socket-client.php
+     * @since 2.0.5
+     */
+    public $socketClientFlags = STREAM_CLIENT_CONNECT;
+    /**
      * @var array List of available redis commands http://redis.io/commands
      */
     public $redisCommands = [
@@ -220,12 +227,18 @@ class Connection extends Component
         'ZREVRANK', // key member Determine the index of a member in a sorted set, with scores ordered from high to low
         'ZSCORE', // key member Get the score associated with the given member in a sorted set
         'ZUNIONSTORE', // destination numkeys key [key ...] [WEIGHTS weight [weight ...]] [AGGREGATE SUM|MIN|MAX] Add multiple sorted sets and store the resulting sorted set in a new key
+        'GEOADD', // key longitude latitude member [longitude latitude member ...] Add point
+        'GEODIST', // key member1 member2 [unit] Return the distance between two members
+        'GEOHASH', // key member [member ...] Return valid Geohash strings
+        'GEOPOS', // key member [member ...] Return the positions (longitude,latitude)
+        'GEORADIUS', // key longitude latitude radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count] Return the members
+        'GEORADIUSBYMEMBER', // key member radius m|km|ft|mi [WITHCOORD] [WITHDIST] [WITHHASH] [COUNT count]
     ];
 
     /**
      * @var resource redis socket connection
      */
-    private $_socket;
+    private $_socket = false;
 
 
     /**
@@ -235,7 +248,6 @@ class Connection extends Component
     public function __sleep()
     {
         $this->close();
-
         return array_keys(get_object_vars($this));
     }
 
@@ -245,7 +257,7 @@ class Connection extends Component
      */
     public function getIsActive()
     {
-        return $this->_socket !== null;
+        return $this->_socket !== false;
     }
 
     /**
@@ -255,7 +267,7 @@ class Connection extends Component
      */
     public function open()
     {
-        if ($this->_socket !== null) {
+        if ($this->_socket !== false) {
             return;
         }
         $connection = ($this->unixSocket ?: $this->hostname . ':' . $this->port) . ', database=' . $this->database;
@@ -264,7 +276,8 @@ class Connection extends Component
             $this->unixSocket ? 'unix://' . $this->unixSocket : 'tcp://' . $this->hostname . ':' . $this->port,
             $errorNumber,
             $errorDescription,
-            $this->connectionTimeout ? $this->connectionTimeout : ini_get("default_socket_timeout")
+            $this->connectionTimeout ? $this->connectionTimeout : ini_get('default_socket_timeout'),
+            $this->socketClientFlags
         );
         if ($this->_socket) {
             if ($this->dataTimeout !== null) {
@@ -278,7 +291,7 @@ class Connection extends Component
         } else {
             \Yii::error("Failed to open redis DB connection ($connection): $errorNumber - $errorDescription", __CLASS__);
             $message = YII_DEBUG ? "Failed to open redis DB connection ($connection): $errorNumber - $errorDescription" : 'Failed to open DB connection.';
-            throw new Exception($message, $errorDescription, (int) $errorNumber);
+            throw new Exception($message, $errorDescription, $errorNumber);
         }
     }
 
@@ -288,7 +301,7 @@ class Connection extends Component
      */
     public function close()
     {
-        if ($this->_socket !== null) {
+        if ($this->_socket !== false) {
             $connection = ($this->unixSocket ?: $this->hostname . ':' . $this->port) . ', database=' . $this->database;
             \Yii::trace('Closing DB connection: ' . $connection, __METHOD__);
             $this->executeCommand('QUIT');
@@ -351,7 +364,7 @@ class Connection extends Component
      *
      * @param string $name the name of the command
      * @param array $params list of parameters for the command
-     * @return array|bool|null|string Dependent on the executed command this method
+     * @return array|boolean|null|string Dependent on the executed command this method
      * will return different data types:
      *
      * - `true` for commands that return "status reply" with the message `'OK'` or `'PONG'`.
