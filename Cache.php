@@ -107,7 +107,7 @@ class Cache extends \yii\caching\Cache
      */
     protected function getValues($keys)
     {
-        $response = $this->redis->executeCommand('MGET', $keys);
+        $response = $this->redis->executeCommand('MGET', [$keys]);
         $result = [];
         $i = 0;
         foreach ($keys as $key) {
@@ -123,11 +123,11 @@ class Cache extends \yii\caching\Cache
     protected function setValue($key, $value, $expire)
     {
         if ($expire == 0) {
-            return (bool) $this->redis->executeCommand('SET', [$key, $value]);
+            return (bool) $this->redis->executeCommand('SETNX', [$key, $value]);
         } else {
             $expire = (int) ($expire * 1000);
 
-            return (bool) $this->redis->executeCommand('SET', [$key, $value, 'PX', $expire]);
+            return (bool) $this->redis->executeCommand('PSETEX', [$key, $expire, $value]);
         }
     }
 
@@ -136,19 +136,13 @@ class Cache extends \yii\caching\Cache
      */
     protected function setValues($data, $expire)
     {
-        $args = [];
-        foreach ($data as $key => $value) {
-            $args[] = $key;
-            $args[] = $value;
-        }
-
         $failedKeys = [];
         if ($expire == 0) {
-            $this->redis->executeCommand('MSET', $args);
+            $this->redis->executeCommand('MSET', [$data]);
         } else {
             $expire = (int) ($expire * 1000);
             $this->redis->executeCommand('MULTI');
-            $this->redis->executeCommand('MSET', $args);
+            $this->redis->executeCommand('MSET', [$data]);
             $index = [];
             foreach ($data as $key => $value) {
                 $this->redis->executeCommand('PEXPIRE', [$key, $expire]);
@@ -172,11 +166,11 @@ class Cache extends \yii\caching\Cache
     protected function addValue($key, $value, $expire)
     {
         if ($expire == 0) {
-            return (bool) $this->redis->executeCommand('SET', [$key, $value, 'NX']);
+            return (bool) $this->redis->executeCommand('SETNX', [$key, $value]);
         } else {
             $expire = (int) ($expire * 1000);
 
-            return (bool) $this->redis->executeCommand('SET', [$key, $value, 'PX', $expire, 'NX']);
+            return (bool) $this->redis->executeCommand('PSETEX', [$key, $expire, $value]);
         }
     }
 

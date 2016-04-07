@@ -35,6 +35,11 @@ class Customer extends ActiveRecord
         return $this->hasMany(Order::className(), ['customer_id' => 'id'])->andWhere("tonumber(redis.call('HGET','order' .. ':a:' .. pk, 'total')) > 50");
     }
 
+    public function getOrdersWithItems()
+    {
+        return $this->hasMany(Order::className(), ['customer_id' => 'id'])->with('orderItems');
+    }
+
     /**
      * @return \yii\redis\ActiveQuery
      */

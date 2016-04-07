@@ -15,7 +15,7 @@ class ConnectionTest extends TestCase
         $db = $this->getConnection(false);
         $database = $db->database;
         $db->open();
-        $this->assertTrue($db->ping());
+        $this->assertEquals('+PONG', $db->ping());
         $db->set('YIITESTKEY', 'YIITESTVALUE');
         $db->close();
 
@@ -28,7 +28,7 @@ class ConnectionTest extends TestCase
         $db = $this->getConnection(false);
         $db->database = 1;
         $db->open();
-        $this->assertNull($db->get('YIITESTKEY'));
+        $this->assertFalse($db->get('YIITESTKEY'));
         $db->close();
     }
 
@@ -62,7 +62,7 @@ class ConnectionTest extends TestCase
     {
         $redis = $this->getConnection();
         $redis->executeCommand('SET',['key1','val1']);
-        $redis->executeCommand('HMSET',['hash1','hk3','hv3','hk4','hv4']);
+        $redis->executeCommand('HMSET', ['hash1', ['hk3' => 'hv3', 'hk4' => 'hv4']]);
         $redis->executeCommand('RPUSH',['newlist2','tgtgt','tgtt','44',11]);
         $redis->executeCommand('SADD',['newset2','segtggttval','sv1','sv2','sv3']);
         $redis->executeCommand('ZADD',['newz2',2,'ss',3,'pfpf']);
@@ -70,11 +70,11 @@ class ConnectionTest extends TestCase
         sort($allKeys);
         $this->assertEquals(['hash1', 'key1', 'newlist2', 'newset2', 'newz2'], $allKeys);
         $expected = [
-            'hash1' => 'hash',
-            'key1' => 'string',
-            'newlist2' => 'list',
-            'newset2' => 'set',
-            'newz2' => 'zset',
+            'hash1' => \Redis::REDIS_HASH,
+            'key1' => \Redis::REDIS_STRING,
+            'newlist2' => \Redis::REDIS_LIST,
+            'newset2' => \Redis::REDIS_SET,
+            'newz2' => \Redis::REDIS_ZSET,
         ];
         foreach($allKeys as $key) {
             $this->assertEquals($expected[$key], $redis->executeCommand('TYPE',[$key]));

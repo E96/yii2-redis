@@ -25,6 +25,9 @@ install:
   - travis_retry composer install --prefer-dist --no-interaction
 
 before_script:
+# install phpredis extension.
+  - sh -c "git clone https://github.com/nicolasff/phpredis/ && cd phpredis && phpize && ./configure && make && sudo make install " > /dev/null
+  - echo "extension=redis.so" >> `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"`
   - |
     if [ $TRAVIS_PHP_VERSION = '5.6' ]; then
       PHPUNIT_FLAGS="--coverage-clover=coverage.clover"
