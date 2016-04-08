@@ -417,7 +417,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
             case 'Column':
                 $column = [];
                 foreach ($data as $dataRow) {
-                    $row = $this->parseList($dataRow);
+                    $row = $this->parseRow($dataRow);
                     $column[] = $row[$columnName];
                 }
 
@@ -425,7 +425,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
             case 'Sum':
                 $sum = 0;
                 foreach ($data as $dataRow) {
-                    $row = $this->parseList($dataRow);
+                    $row = $this->parseRow($dataRow);
                     $sum += $row[$columnName];
                 }
 
@@ -435,7 +435,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
                 $count = 0;
                 foreach ($data as $dataRow) {
                     $count++;
-                    $row = $this->parseList($dataRow);
+                    $row = $this->parseRow($dataRow);
                     $sum += $row[$columnName];
                 }
 
@@ -443,7 +443,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
             case 'Min':
                 $min = null;
                 foreach ($data as $dataRow) {
-                    $row = $this->parseList($dataRow);
+                    $row = $this->parseRow($dataRow);
                     if ($min == null || $row[$columnName] < $min) {
                         $min = $row[$columnName];
                     }
@@ -453,7 +453,7 @@ class ActiveQuery extends Component implements ActiveQueryInterface
             case 'Max':
                 $max = null;
                 foreach ($data as $dataRow) {
-                    $row = $this->parseList($dataRow);
+                    $row = $this->parseRow($dataRow);
                     if ($max == null || $row[$columnName] > $max) {
                         $max = $row[$columnName];
                     }
