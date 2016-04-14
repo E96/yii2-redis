@@ -273,6 +273,9 @@ class Connection extends Component
         }
 
         if ($connected) {
+            if ($this->dataTimeout !== null) {
+                $this->_client->setOption(\Redis::OPT_READ_TIMEOUT, (int)$this->dataTimeout);
+            }
             if ($this->password !== null) {
                 $this->executeCommand('AUTH', [$this->password]);
             }
