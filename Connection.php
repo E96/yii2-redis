@@ -303,11 +303,11 @@ class Connection extends Component
      */
     public function close()
     {
-        if ($this->_client !== false) {
+        if ($this->_client) {
             $connection = ($this->unixSocket ?: $this->hostname . ':' . $this->port) . ', database=' . $this->database;
             \Yii::trace('Closing DB connection: ' . $connection, __METHOD__);
             $this->_client->close();
-            $this->_client = null;
+            $this->_client = false;
         }
     }
 
