@@ -137,7 +137,7 @@ class ActiveRecord extends BaseActiveRecord
             }
         }
 
-        if (count($setArgs) > 1) {
+        if (!empty($setArgs)) {
             $db->executeCommand('HMSET', [$key, $setArgs]);
         }
 
