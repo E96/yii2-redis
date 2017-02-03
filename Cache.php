@@ -123,7 +123,7 @@ class Cache extends \yii\caching\Cache
     protected function setValue($key, $value, $expire)
     {
         if ($expire == 0) {
-            return (bool) $this->redis->executeCommand('SETNX', [$key, $value]);
+            return (bool) $this->redis->executeCommand('SET', [$key, $value]);
         } else {
             $expire = (int) ($expire * 1000);
 
