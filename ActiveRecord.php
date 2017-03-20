@@ -351,8 +351,9 @@ class ActiveRecord extends BaseActiveRecord
         }
         $names = array_flip($names);
         $attributes = [];
-        foreach ($this->attributes as $name => $value) {
-            if (isset($names[$name]) && (!array_key_exists($name, $this->oldAttributes) || $this->isAttributeChanged($name))) {
+        $attributesData = $this->attributes;
+        foreach ($attributesData as $name => $value) {
+            if (isset($names[$name]) && (!array_key_exists($name, $this->oldAttributes) || static::checkAttributeChanged($attributesData, $this->oldAttributes, $name))) {
                 $attributes[$name] = $value;
             }
         }
@@ -369,13 +370,25 @@ class ActiveRecord extends BaseActiveRecord
      */
     public function isAttributeChanged($name, $identical = true)
     {
-        if (isset($this->attributes[$name], $this->oldAttributes[$name])) {
+        return static::checkAttributeChanged($this->attributes, $this->oldAttributes, $name, $identical);
+    }
+
+    /**
+     * @param array $attributes current values
+     * @param array $oldAttributes old values
+     * @param string $name the name of the attribute.
+     * @param bool $identical
+     * @return bool whether the attribute has been changed
+     */
+    protected static function checkAttributeChanged($attributes, $oldAttributes, $name, $identical = true)
+    {
+        if (isset($attributes[$name], $oldAttributes[$name])) {
             if ($identical) {
-                if (is_bool($newValue = $this->attributes[$name])) {
-                    $newValue = (int)$this->attributes[$name];
+                if (is_bool($newValue = $attributes[$name])) {
+                    $newValue = (int)$attributes[$name];
                 }
-                if (is_bool($oldValue = $this->oldAttributes[$name])) {
-                    $oldValue = (int)$this->oldAttributes[$name];
+                if (is_bool($oldValue = $oldAttributes[$name])) {
+                    $oldValue = (int)$oldAttributes[$name];
                 }
 
                 if (is_array($newValue)) {
@@ -387,10 +400,10 @@ class ActiveRecord extends BaseActiveRecord
 
                 return (string)$newValue !== (string)$oldValue;
             } else {
-                return $this->attributes[$name] != $this->oldAttributes[$name];
+                return $attributes[$name] != $oldAttributes[$name];
             }
         } else {
-            return isset($this->attributes[$name]) || isset($this->oldAttributes[$name]);
+            return isset($attributes[$name]) || isset($oldAttributes[$name]);
         }
     }
 
@@ -411,11 +424,11 @@ class ActiveRecord extends BaseActiveRecord
     public static function populateRecord($record, $row)
     {
         foreach ($record->attributes() as $name) {
-            $record->setAttribute($name, isset($row[$name]) ? $row[$name] : null);
-            if (isset($row[$name]) && $record->canSetProperty($name)) {
-                $record->$name = $row[$name];
+            if (!isset($row[$name])) {
+                $row[$name] = null;
             }
         }
-        $record->setOldAttributes($record->attributes);
+
+        parent::populateRecord($record, $row);
     }
 }
