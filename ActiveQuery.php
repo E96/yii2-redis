@@ -338,12 +338,8 @@ class ActiveQuery extends Component implements ActiveQueryInterface
             $db = $modelClass::getDb();
         }
 
-        // convert inCondition for one key
-        if (is_array($this->where) && isset($this->where[0]) && $this->where[0] == 'in' && count(
-                $this->where[1]
-            ) == 1
-        ) {
-            $this->where = [current($this->where[1]) => $this->where[2]];
+        if ($where = $this->pkFromCondition($modelClass)) {
+            $this->where = $where;
         }
 
         // find by primary key if possible. This is much faster than scanning all records
@@ -355,6 +351,34 @@ class ActiveQuery extends Component implements ActiveQueryInterface
         $script = $db->getLuaScriptBuilder()->$method($this, $columnName);
 
         return $db->executeCommand('EVAL', [$script]);
+    }
+
+    private function pkFromCondition($modelClass)
+    {
+        $where = $this->where;
+        if (is_array($where) && isset($where[0]) && is_string($where[0])) {
+            // check in condition for one key
+            if ($where[0] == 'in' && $modelClass::isPrimaryKey((array)$where[1])) {
+                return [current($where[1]) => $where[2]];
+            }
+
+            // check and condition
+            if ($where[0] == 'and') {
+                unset($where[0]);
+                foreach ($where as $key => $operand) {
+                    if (!is_array($operand)) {
+                        return false;
+                    }
+                }
+
+                $where = call_user_func_array('array_merge', $where);
+                if ($modelClass::isPrimaryKey(array_keys($where))) {
+                    return $where;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
